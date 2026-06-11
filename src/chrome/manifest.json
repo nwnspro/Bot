@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Vocab Bot",
+  "version": "1.0",
+  "description": "Send words from any webpage to your Discord vocabulary bot.",
+  "permissions": ["contextMenus", "storage", "notifications"],
+  "host_permissions": ["http://localhost:3001/*", "https://*.up.railway.app/*", "<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vocab Bot"
+  },
+  "options_page": "options.html",
+  "web_accessible_resources": [
+    { "resources": ["study.html"], "matches": ["<all_urls>"] }
+  ]
+}

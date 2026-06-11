@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Elephant — Review</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #edeae5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 48px;
+    }
+
+    .page { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── Header card ── */
+    .hdr {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.06);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hdr-left { display: flex; align-items: center; gap: 9px; }
+    .hdr-logo {
+      font-size: 24px;
+      line-height: 1;
+      border-bottom: 3px solid #4a6741;
+      flex-shrink: 0;
+    }
+    .hdr-title { font-size: 16px; font-weight: 600; color: #2e4a28; }
+    .hdr-count { font-size: 15px; font-weight: 700; color: #4a6741; }
+
+    /* ── Word card ── */
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+
+    .word-section { padding: 20px 20px 18px; display: flex; align-items: flex-start; gap: 14px; }
+    .play-btn {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid #a8c4a0;
+      background: #fff;
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .play-btn:hover { background: #f0f7ee; }
+    .play-btn svg { margin-left: 2px; }
+    .word-meta { flex: 1; min-width: 0; }
+    .word-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .word-text { font-size: 28px; font-weight: 700; color: #1e2d1b; letter-spacing: -.01em; line-height: 1; }
+    .pos-text { font-size: 14px; font-style: italic; color: #7a8f77; }
+    .phonetic { font-size: 15px; color: #7a8f77; margin-top: 5px; }
+
+    /* ── Tinted box ── */
+    .tinted {
+      margin: 0 14px 14px;
+      background: #f4f2ee;
+      border-radius: 13px;
+      padding: 14px 16px 16px;
+    }
+    .zh-row { display: flex; align-items: center; gap: 12px; }
+    .play-btn-sm {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid #a8c4a0;
+      background: #fff;
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .play-btn-sm:hover { background: #f0f7ee; }
+    .play-btn-sm svg { margin-left: 1px; }
+    .zh-text {
+      font-size: 22px; font-weight: 600; color: #1e2d1b;
+      font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.3;
+    }
+    .tinted hr { border: none; border-top: 1px solid rgba(0,0,0,.08); margin: 12px 0; }
+    .ex-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .09em;
+      text-transform: uppercase; color: #4a6741; margin-bottom: 7px;
+    }
+    .ex-text {
+      font-size: 15px; line-height: 1.55; color: #6b7f68; font-style: italic;
+    }
+    .ex-text .hl { color: #4a6741; font-style: normal; font-weight: 600; }
+
+    /* ── Action buttons ── */
+    .actions { display: flex; gap: 10px; }
+    .btn {
+      flex: 1; padding: 16px 10px;
+      border-radius: 14px; border: none; cursor: pointer;
+      font-size: 16px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity .12s, transform .08s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-know {
+      background: #3d5c38; color: #fff;
+      box-shadow: 0 4px 14px rgba(61,92,56,.3);
+    }
+    .btn-know:hover { opacity: .92; }
+    .btn-keep {
+      background: #fff; color: #3d5c38;
+      border: 1.5px solid rgba(61,92,56,.2);
+    }
+    .btn-keep:hover { background: #f4f2ee; }
+
+    /* ── Loading / empty / done states ── */
+    .state-card {
+      background: #fff; border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.06);
+      padding: 40px 24px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px; text-align: center; color: #6b7f68;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 28px; height: 28px; border: 3px solid #ddd;
+      border-top-color: #4a6741; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .state-title { font-size: 17px; font-weight: 600; color: #2e4a28; }
+    .state-sub { font-size: 14px; }
+    .done-icon { font-size: 40px; }
+    .err-text { font-size: 13px; color: #c0392b; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="hdr">
+      <div class="hdr-left">
+        <span class="hdr-logo">🐘</span>
+        <span class="hdr-title">Review</span>
+      </div>
+      <span class="hdr-count" id="count-label"></span>
+    </div>
+
+    <!-- Dynamic content -->
+    <div id="content">
+      <div class="state-card">
+        <div class="spinner"></div>
+        <div class="state-sub">Loading your words…</div>
+      </div>
+    </div>
+
+  </div>
+  <script src="study.js"></script>
+</body>
+</html>
