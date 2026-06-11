@@ -1,6 +1,12 @@
 const crypto = require('crypto');
 const { getUserData, saveUserData } = require('../storage');
 
+function getServerUrl() {
+	if (process.env.EXTENSION_SERVER_URL) return process.env.EXTENSION_SERVER_URL.replace(/\/$/, '');
+	if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+	return 'http://localhost:3001';
+}
+
 module.exports = {
 	name: 'mytoken',
 	async execute(interaction) {
@@ -19,7 +25,7 @@ module.exports = {
 				'Paste this into the extension options page.',
 				'⚠️  Keep it private — anyone with this token can add words to your list.',
 				'',
-				'Server URL to set in the extension: `http://localhost:3001`',
+				`Server URL to set in the extension: \`${getServerUrl()}\``,
 			].join('\n'),
 			ephemeral: true,
 		});

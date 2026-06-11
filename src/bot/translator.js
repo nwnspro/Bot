@@ -40,6 +40,24 @@ function postJson(url, body, headers) {
 	});
 }
 
+function cleanTranslation(value) {
+	const text = String(value || '').trim();
+	if (!text) return '';
+
+	const upper = text.toUpperCase();
+	if (
+		upper.includes('INVALID EMAIL')
+		|| upper.includes('INVALID API')
+		|| upper.includes('QUERY LENGTH LIMIT')
+		|| upper.includes('TOO MANY REQUESTS')
+		|| upper.includes('MYMEMORY WARNING')
+	) {
+		return '';
+	}
+
+	return text;
+}
+
 async function translateWithAzure(text) {
 	const key = process.env.AZURE_TRANSLATOR_KEY;
 	const region = process.env.AZURE_TRANSLATOR_REGION;
@@ -57,7 +75,7 @@ async function translateWithAzure(text) {
 
 		if (status !== 200) return '';
 		const [result] = JSON.parse(body);
-		return result?.translations?.[0]?.text || '';
+		return cleanTranslation(result?.translations?.[0]?.text);
 	}
 	catch {
 		return '';
@@ -78,7 +96,7 @@ async function translateWithMyMemory(text) {
 		if (status !== 200) return '';
 
 		const result = JSON.parse(body);
-		return result?.responseData?.translatedText || '';
+		return cleanTranslation(result?.responseData?.translatedText);
 	}
 	catch {
 		return '';
