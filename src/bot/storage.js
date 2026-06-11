@@ -186,6 +186,31 @@ async function findUserByToken(token) {
 	};
 }
 
+async function getDictCache(word) {
+	try {
+		const { data } = await supabase
+			.from('dictionary_cache')
+			.select('result')
+			.eq('word', word.toLowerCase())
+			.single();
+		return data?.result ?? null;
+	}
+	catch {
+		return null;
+	}
+}
+
+async function setDictCache(word, result) {
+	try {
+		await supabase
+			.from('dictionary_cache')
+			.upsert({ word: word.toLowerCase(), result, cached_at: new Date().toISOString() }, { onConflict: 'word' });
+	}
+	catch {
+		// cache write failures are non-fatal
+	}
+}
+
 module.exports = {
 	getUserData,
 	saveUserData,
@@ -195,5 +220,7 @@ module.exports = {
 	setWordStatus,
 	recordReview,
 	recordCalibration,
+	getDictCache,
+	setDictCache,
 	findUserByToken,
 };

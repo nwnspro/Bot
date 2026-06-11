@@ -1,5 +1,6 @@
 const https = require('https');
 const { translateToZh } = require('./translator');
+const { getDictCache, setDictCache } = require('./storage');
 
 // ── In-memory cache ───────────────────────────────────────────────────────────
 const cache = new Map();
@@ -131,8 +132,7 @@ async function lookupLearnersDictionary(cleanWord) {
 		}
 
 		if (!definition) return null;
-		const zh = await translateToZh(hw);
-		return { word: hw, pos, phonetic, audio, zh, definition, example, synonyms: [], antonyms: [] };
+		return { word: hw, pos, phonetic, audio, zh: '', definition, example, synonyms: [], antonyms: [] };
 	}
 	catch {
 		return null;
@@ -179,13 +179,12 @@ async function lookupDatamuse(cleanWord) {
 	const definition = definitionFromDatamuse(exact);
 	if (!definition && !synonyms?.length && !antonyms?.length) return null;
 
-	const zh = await translateToZh(cleanWord);
 	return {
 		word: exact?.word || cleanWord,
 		pos: exact?.tags?.find(tag => ['n', 'v', 'adj', 'adv'].includes(tag)) || '',
 		phonetic: pronunciationFromDatamuse(exact),
 		audio: '',
-		zh,
+		zh: '',
 		definition,
 		example: '',
 		synonyms: (synonyms || []).map(item => item.word).filter(Boolean).slice(0, 5),
@@ -224,14 +223,13 @@ async function lookupFreeDictionary(cleanWord) {
 			...(meaning.antonyms || []),
 			...(meaning.definitions || []).flatMap(definition => definition.antonyms || []),
 		]);
-	const zh = await translateToZh(entry.word || cleanWord);
 
 	return {
 		word: entry.word,
 		pos: first?.meaning?.partOfSpeech || '',
 		phonetic,
 		audio,
-		zh,
+		zh: '',
 		definition: first?.definition?.definition || '',
 		example,
 		synonyms: [...new Set(synonyms)].slice(0, 5),
@@ -243,13 +241,23 @@ async function lookup(word) {
 	const cleanWord = String(word || '').trim();
 	if (!cleanWord) return null;
 
-	const cached = fromCache(cleanWord);
-	if (cached) return cached;
+	// 1. In-memory cache (fastest)
+	const memCached = fromCache(cleanWord);
+	if (memCached) return memCached;
+
+	// 2. Persistent DB cache (survives restarts)
+	const dbCached = await getDictCache(cleanWord);
+	if (dbCached) {
+		toCache(cleanWord, dbCached);
+		return dbCached;
+	}
 
 	try {
-		const [learners, thesaurus] = await Promise.all([
+		// 3. Fire dictionary, thesaurus, and translation all at once
+		const [learners, thesaurus, zh] = await Promise.all([
 			lookupLearnersDictionary(cleanWord),
 			lookupMerriamThesaurus(cleanWord),
+			translateToZh(cleanWord),
 		]);
 
 		let result = learners
@@ -258,12 +266,15 @@ async function lookup(word) {
 
 		if (!result) return null;
 
+		result.zh = zh || '';
+
 		if (thesaurus) {
 			result.synonyms = thesaurus.synonyms.length ? thesaurus.synonyms : result.synonyms;
 			result.antonyms = thesaurus.antonyms.length ? thesaurus.antonyms : result.antonyms;
 		}
 
 		toCache(cleanWord, result);
+		setDictCache(cleanWord, result); // fire-and-forget, non-blocking
 		return result;
 	}
 	catch {

@@ -38,6 +38,12 @@ CREATE INDEX IF NOT EXISTS words_user_status_active_idx
 CREATE INDEX IF NOT EXISTS users_api_token_idx
   ON users (api_token);
 
+CREATE TABLE IF NOT EXISTS dictionary_cache (
+  word       TEXT PRIMARY KEY,
+  result     JSONB NOT NULL,
+  cached_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE OR REPLACE FUNCTION record_review(p_user_id TEXT, p_word TEXT, p_correct BOOLEAN)
 RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
