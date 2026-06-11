@@ -25,7 +25,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   if (!serverUrl || !apiToken) {
     chrome.notifications.create('vocab-setup', {
       type: 'basic',
-      iconUrl: 'icon.png',
+      iconUrl: 'icon48.png',
       title: 'Vocab Bot — Setup needed',
       message: 'Open extension options and add your server URL and token.',
     });
@@ -41,7 +41,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
     const data = await res.json();
     chrome.notifications.create({
       type: 'basic',
-      iconUrl: 'icon.png',
+      iconUrl: 'icon48.png',
       title: 'Vocab Bot',
       message: data.ok
         ? `Sent ${words.length} word(s) to Discord! Check your DMs.`
@@ -50,7 +50,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   } catch {
     chrome.notifications.create({
       type: 'basic',
-      iconUrl: 'icon.png',
+      iconUrl: 'icon48.png',
       title: 'Vocab Bot — Connection failed',
       message: 'Could not reach the bot. Make sure it is running.',
     });
