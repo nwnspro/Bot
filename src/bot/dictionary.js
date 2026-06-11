@@ -34,14 +34,6 @@ function get(url) {
 	});
 }
 
-function wordnikUrl(word, path, params = {}) {
-	const query = new URLSearchParams({
-		...params,
-		api_key: process.env.WORDNIK_API_KEY,
-	});
-	return `https://api.wordnik.com/v4/word.json/${encodeURIComponent(word)}/${path}?${query.toString()}`;
-}
-
 function datamuseUrl(params) {
 	const query = new URLSearchParams(params);
 	return `https://api.datamuse.com/words?${query.toString()}`;
@@ -53,15 +45,6 @@ async function getJson(url) {
 	return JSON.parse(body);
 }
 
-function firstText(values, keys) {
-	for (const value of values || []) {
-		for (const key of keys) {
-			if (value?.[key]) return value[key];
-		}
-	}
-	return '';
-}
-
 function pronunciationFromDatamuse(result) {
 	const pronTag = result?.tags?.find(tag => tag.startsWith('pron:'));
 	return pronTag ? `/${pronTag.slice(5)}/` : '';
@@ -70,30 +53,6 @@ function pronunciationFromDatamuse(result) {
 function definitionFromDatamuse(result) {
 	const def = result?.defs?.[0] || '';
 	return def.replace(/^[a-z]+\t/, '');
-}
-
-async function lookupTatoebaExample(cleanWord) {
-	try {
-		const query = new URLSearchParams({
-			from: 'eng',
-			query: cleanWord,
-			sort: 'relevance',
-			orphans: 'no',
-			unapproved: 'no',
-		});
-		const data = await getJson(`https://tatoeba.org/en/api_v0/search?${query.toString()}`);
-		const pattern = new RegExp(`\\b${cleanWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-		const sentence = data?.results?.find(result =>
-			result?.text
-			&& pattern.test(result.text)
-			&& result.text.length <= 180,
-		) || data?.results?.find(result => result?.text && result.text.length <= 180);
-
-		return sentence?.text || '';
-	}
-	catch {
-		return '';
-	}
 }
 
 // ── Merriam-Webster helpers ───────────────────────────────────────────────────
@@ -123,7 +82,6 @@ function stripMwMarkup(text) {
 }
 
 function extractMwDtText(dt) {
-	// dt is an array of [type, value] pairs
 	for (const [type, val] of (dt || [])) {
 		if (type === 'text') return stripMwMarkup(val);
 	}
@@ -156,7 +114,6 @@ async function lookupLearnersDictionary(cleanWord) {
 		const phonetic = prs?.mw ? `/${prs.mw}/` : '';
 		const audio = mwAudioUrl(prs?.sound?.audio || '');
 
-		// Walk sseq to find first definition and example
 		let definition = '';
 		let example = '';
 		outer: for (const defBlock of (entry?.def || [])) {
@@ -199,62 +156,6 @@ async function lookupMerriamThesaurus(cleanWord) {
 	}
 }
 
-async function lookupWordnik(cleanWord) {
-	if (!process.env.WORDNIK_API_KEY) return null;
-
-	const [definitions, examples, related, pronunciations, audio] = await Promise.all([
-		getJson(wordnikUrl(cleanWord, 'definitions', {
-			limit: '5',
-			includeRelated: 'false',
-			useCanonical: 'true',
-			includeTags: 'false',
-		})),
-		getJson(wordnikUrl(cleanWord, 'examples', {
-			includeDuplicates: 'false',
-			useCanonical: 'true',
-			limit: '5',
-		})),
-		getJson(wordnikUrl(cleanWord, 'relatedWords', {
-			useCanonical: 'true',
-			relationshipTypes: 'synonym,antonym',
-			limitPerRelationshipType: '5',
-		})),
-		getJson(wordnikUrl(cleanWord, 'pronunciations', {
-			useCanonical: 'true',
-			limit: '5',
-		})),
-		getJson(wordnikUrl(cleanWord, 'audio', {
-			useCanonical: 'true',
-			limit: '1',
-		})),
-	]);
-
-	const definition = firstText(definitions, ['text']);
-	if (!definition) return null;
-
-	const synonyms = related
-		?.find(group => group.relationshipType === 'synonym')
-		?.words
-		?.slice(0, 5) || [];
-	const antonyms = related
-		?.find(group => group.relationshipType === 'antonym')
-		?.words
-		?.slice(0, 3) || [];
-	const zh = await translateToZh(cleanWord);
-
-	return {
-		word: definitions?.[0]?.word || cleanWord,
-		pos: definitions?.[0]?.partOfSpeech || '',
-		phonetic: firstText(pronunciations, ['raw', 'rawType', 'seq']),
-		audio: audio?.[0]?.fileUrl || '',
-		zh,
-		definition,
-		example: examples?.examples?.find(example => example.text)?.text || await lookupTatoebaExample(cleanWord),
-		synonyms,
-		antonyms,
-	};
-}
-
 async function lookupDatamuse(cleanWord) {
 	const [wordData, synonyms, antonyms] = await Promise.all([
 		getJson(datamuseUrl({
@@ -279,7 +180,6 @@ async function lookupDatamuse(cleanWord) {
 	if (!definition && !synonyms?.length && !antonyms?.length) return null;
 
 	const zh = await translateToZh(cleanWord);
-	const example = await lookupTatoebaExample(cleanWord);
 	return {
 		word: exact?.word || cleanWord,
 		pos: exact?.tags?.find(tag => ['n', 'v', 'adj', 'adv'].includes(tag)) || '',
@@ -287,7 +187,7 @@ async function lookupDatamuse(cleanWord) {
 		audio: '',
 		zh,
 		definition,
-		example,
+		example: '',
 		synonyms: (synonyms || []).map(item => item.word).filter(Boolean).slice(0, 5),
 		antonyms: (antonyms || []).map(item => item.word).filter(Boolean).slice(0, 3),
 	};
@@ -311,7 +211,7 @@ async function lookupFreeDictionary(cleanWord) {
 		(meaning.definitions || []).map(definition => ({ meaning, definition })),
 	);
 	const first = definitions.find(item => item.definition?.definition) || definitions[0];
-	const example = definitions.find(item => item.definition?.example)?.definition?.example || await lookupTatoebaExample(cleanWord);
+	const example = definitions.find(item => item.definition?.example)?.definition?.example || '';
 	const phonetic = entry.phonetics?.find(p => p.text)?.text || entry.phonetic || '';
 	const audio = entry.phonetics?.find(p => p.audio)?.audio || '';
 	const synonyms = meanings
@@ -347,28 +247,21 @@ async function lookup(word) {
 	if (cached) return cached;
 
 	try {
-		// Run Learner's Dictionary + Thesaurus in parallel — both are MW APIs,
-		// reliable and purpose-built for this use case.
 		const [learners, thesaurus] = await Promise.all([
 			lookupLearnersDictionary(cleanWord),
 			lookupMerriamThesaurus(cleanWord),
 		]);
 
-		// Start with Learner's Dictionary, fall back to other sources for gaps
 		let result = learners
-			|| await lookupWordnik(cleanWord)
 			|| await lookupFreeDictionary(cleanWord)
 			|| await lookupDatamuse(cleanWord);
 
 		if (!result) return null;
 
-		// Apply thesaurus synonyms/antonyms (always prefer MW Thesaurus)
 		if (thesaurus) {
 			result.synonyms = thesaurus.synonyms.length ? thesaurus.synonyms : result.synonyms;
 			result.antonyms = thesaurus.antonyms.length ? thesaurus.antonyms : result.antonyms;
 		}
-
-		result.example = result.example || await lookupTatoebaExample(cleanWord);
 
 		toCache(cleanWord, result);
 		return result;
