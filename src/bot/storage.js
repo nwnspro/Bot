@@ -116,6 +116,16 @@ async function deleteWord(userId, word) {
 	return (data ?? []).length > 0;
 }
 
+async function saveWordZh(userId, word, zh) {
+	if (!zh) return;
+	await supabase
+		.from('words')
+		.update({ zh })
+		.eq('user_id', userId)
+		.ilike('word', word)
+		.is('deleted_at', null);
+}
+
 async function setWordStatus(userId, word, status) {
 	const { error } = await supabase
 		.from('words')
@@ -181,6 +191,7 @@ module.exports = {
 	saveUserData,
 	addWords,
 	deleteWord,
+	saveWordZh,
 	setWordStatus,
 	recordReview,
 	recordCalibration,

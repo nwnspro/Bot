@@ -203,7 +203,7 @@ module.exports = {
 			const deleted = await deleteWord(userId, suggestion.word);
 			if (deleted) rejected.add(rejectedIndex);
 
-			await i.update({ components: [buildRejectRow(rejectedIndex, true)] });
+			await i.editReply({ components: [buildRejectRow(rejectedIndex, true)] });
 		});
 
 		collector.on('end', async (_, reason) => {

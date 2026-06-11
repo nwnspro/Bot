@@ -1,6 +1,6 @@
 const http = require('http');
 const { EmbedBuilder } = require('discord.js');
-const { addWords, setWordStatus, recordReview, findUserByToken } = require('../storage');
+const { addWords, saveWordZh, setWordStatus, recordReview, findUserByToken } = require('../storage');
 const { lookup, lookupMany } = require('../dictionary');
 
 const PORT = process.env.PORT || 3001;
@@ -62,6 +62,13 @@ const server = http.createServer(async (req, res) => {
 			const user = await findUserByToken(token);
 			if (!user) return respond(res, 401, { error: 'Invalid token. Run /mytoken in Discord.' });
 
+			// Check if we already have a stored zh for this word (avoids hitting
+			// the MyMemory rate limit on every lookup).
+			const stored = user.data.words.find(
+				entry => entry.word.toLowerCase() === word.toLowerCase(),
+			);
+			const storedZh = stored?.zh || '';
+
 			let result;
 			try {
 				result = await lookup(word);
@@ -71,10 +78,17 @@ const server = http.createServer(async (req, res) => {
 				result = null;
 			}
 
+			// Prefer a freshly-translated zh; fall back to whatever is in the DB.
+			if (result && !result.zh && storedZh) result.zh = storedZh;
+
 			try {
-				const exists = user.data.words.some(entry => entry.word.toLowerCase() === word.toLowerCase());
-				if (!exists) {
+				if (!stored) {
 					await addWords(user.userId, [word], 'extension');
+				}
+				// Persist zh to the DB so future lookups don't need to re-translate.
+				const zhToSave = result?.zh || storedZh;
+				if (zhToSave && (!storedZh || storedZh !== zhToSave)) {
+					await saveWordZh(user.userId, word, zhToSave);
 				}
 			}
 			catch (err) {
