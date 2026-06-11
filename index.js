@@ -1,8 +1,9 @@
-const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { token } = require('./src/bot/config');
 const fs = require('fs');
 const path = require('path');
 const { setClient } = require('./src/bot/extension-api/server');
+const { deleteWord } = require('./src/bot/storage');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 
@@ -21,6 +22,26 @@ client.once(Events.ClientReady, readyClient => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
+  if (interaction.isButton() && interaction.customId.startsWith('learn_reject_')) {
+    const word = interaction.customId.replace('learn_reject_', '');
+    try {
+      await interaction.deferUpdate();
+      await deleteWord(interaction.user.id, word);
+      await interaction.editReply({
+        components: [new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(interaction.customId)
+            .setLabel('Removed from my list')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(true),
+        )],
+      });
+    } catch (err) {
+      console.error('[learn_reject]', err);
+    }
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);

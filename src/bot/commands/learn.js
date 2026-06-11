@@ -4,7 +4,7 @@ const {
 	ButtonBuilder,
 	ButtonStyle,
 } = require('discord.js');
-const { getUserData, addWords, deleteWord } = require('../storage');
+const { getUserData, addWords } = require('../storage');
 const { suggestWords, getFriendlyGeminiError } = require('../ai/gemini');
 const { lookupMany } = require('../dictionary');
 const { buildAudioAttachment } = require('../audio-attachment');
@@ -86,13 +86,13 @@ async function getFreshSuggestions(data, existing, targetCount) {
 	return picked;
 }
 
-function buildRejectRow(index, rejected = false, expired = false) {
+function buildRejectRow(word, rejected = false) {
 	return new ActionRowBuilder().addComponents(
 		new ButtonBuilder()
-			.setCustomId(`learn_reject_${index}`)
+			.setCustomId(`learn_reject_${word}`)
 			.setLabel(rejected ? 'Removed from my list' : 'Not for me')
 			.setStyle(ButtonStyle.Primary)
-			.setDisabled(rejected || expired),
+			.setDisabled(rejected),
 	);
 }
 
@@ -166,8 +166,6 @@ module.exports = {
 			word,
 			detail: getWordDetail(word, details, index),
 		}));
-		const rejected = new Set();
-		const messages = [];
 
 		for (const [index, suggestion] of suggestions.entries()) {
 			const payload = {
@@ -175,48 +173,16 @@ module.exports = {
 					? `I added **${suggestions.length}** AI-picked words to your list. Tap **Not for me** under any word you want to remove.`
 					: undefined,
 				embeds: [buildWordEmbed(suggestion.word, suggestion.detail, 0x57F287, `(${index + 1}/${suggestions.length})`)],
-				components: [buildRejectRow(index)],
+				components: [buildRejectRow(suggestion.word)],
 				files: await filesForWord(suggestion.detail, suggestion.word),
 			};
 
 			if (index === 0) {
 				await interaction.editReply(payload);
-				messages.push(await interaction.fetchReply());
 			}
 			else {
-				messages.push(await interaction.followUp(payload));
+				await interaction.followUp(payload);
 			}
 		}
-
-		const collector = interaction.channel.createMessageComponentCollector({
-			filter: i => i.user.id === userId && i.customId.startsWith('learn_'),
-			time: 10 * 60 * 1000,
-		});
-
-		collector.on('collect', async i => {
-			await i.deferUpdate();
-
-			const rejectedIndex = Number(i.customId.replace('learn_reject_', ''));
-			const suggestion = suggestions[rejectedIndex];
-			if (!suggestion || rejected.has(rejectedIndex)) return;
-
-			const deleted = await deleteWord(userId, suggestion.word);
-			if (deleted) rejected.add(rejectedIndex);
-
-			await i.editReply({ components: [buildRejectRow(rejectedIndex, true)] });
-		});
-
-		collector.on('end', async (_, reason) => {
-			if (reason === 'time') {
-				for (const [index, message] of messages.entries()) {
-					try {
-						await message.edit({ components: [buildRejectRow(index, rejected.has(index), true)] });
-					}
-					catch {
-						// A follow-up message may already be gone.
-					}
-				}
-			}
-		});
 	},
 };
