@@ -2,7 +2,7 @@ const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 const { token } = require('./src/bot/config');
 const fs = require('fs');
 const path = require('path');
-const { createServer } = require('./src/bot/extension-api/server');
+const { setClient } = require('./src/bot/extension-api/server');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 
@@ -17,7 +17,7 @@ for (const file of fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'))) 
 
 client.once(Events.ClientReady, readyClient => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-  createServer(client);
+  setClient(client);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
