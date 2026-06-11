@@ -186,6 +186,19 @@ async function findUserByToken(token) {
 	};
 }
 
+async function createGuestUser() {
+	const crypto = require('crypto');
+	const userId = `guest_${crypto.randomUUID()}`;
+	const apiToken = crypto.randomBytes(24).toString('hex');
+
+	const { error } = await supabase
+		.from('users')
+		.insert({ user_id: userId, api_token: apiToken });
+
+	if (error) throw error;
+	return { userId, apiToken };
+}
+
 async function getDictCache(word) {
 	try {
 		const { data } = await supabase
@@ -220,6 +233,7 @@ module.exports = {
 	setWordStatus,
 	recordReview,
 	recordCalibration,
+	createGuestUser,
 	getDictCache,
 	setDictCache,
 	findUserByToken,

@@ -1,6 +1,6 @@
 const http = require('http');
 const { EmbedBuilder } = require('discord.js');
-const { addWords, saveWordZh, setWordStatus, recordReview, findUserByToken } = require('../storage');
+const { addWords, saveWordZh, setWordStatus, recordReview, findUserByToken, createGuestUser } = require('../storage');
 const { lookup, lookupMany } = require('../dictionary');
 
 const PORT = process.env.PORT || 3001;
@@ -51,6 +51,14 @@ const server = http.createServer(async (req, res) => {
 				service: 'vocab-bot-extension-api',
 				botReady: Boolean(discordClient),
 			});
+		}
+
+		// ── POST /api/register ───────────────────────────────────────────────────
+		// Creates a guest account (no Discord needed) and returns a token.
+		if (req.method === 'POST' && url.pathname === '/api/register') {
+			const { userId, apiToken } = await createGuestUser();
+			console.log(`[register] new guest user ${userId}`);
+			return respond(res, 200, { ok: true, token: apiToken });
 		}
 
 		// ── GET /api/enrich?token=&word= ─────────────────────────────────────────

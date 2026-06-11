@@ -20,7 +20,8 @@
       padding: 22px;
       box-shadow: 0 18px 38px rgba(67,53,38,.10);
     }
-    h1 { font-size: 24px; color: #2e4a28; font-weight: 800; margin-bottom: 24px; }
+    h1 { font-size: 24px; color: #2e4a28; font-weight: 800; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #89837b; margin-bottom: 24px; }
     .field { margin-bottom: 18px; }
     label {
       display: block;
@@ -44,40 +45,71 @@
     input:focus { border-color: #6f8b61; background: #fff; }
     input::placeholder { color: #9b968f; }
     .hint { font-size: 12px; color: #89837b; margin-top: 6px; line-height: 1.35; }
+    .btn-row { display: flex; gap: 10px; margin-top: 4px; }
     button {
-      width: 100%;
+      flex: 1;
       padding: 13px 20px;
-      background: #3d5c38;
-      color: #fff;
-      border: 1px solid #3d5c38;
       border-radius: 14px;
       font-size: 15px;
       cursor: pointer;
       font-weight: 800;
+      transition: background .12s;
+    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    #save {
+      background: #3d5c38;
+      color: #fff;
+      border: 1px solid #3d5c38;
       box-shadow: 0 8px 18px rgba(61,92,56,.22);
     }
-    button:hover { background: #344f30; }
+    #save:hover:not(:disabled) { background: #344f30; }
+    #register {
+      background: #fff;
+      color: #3d5c38;
+      border: 1.5px solid rgba(61,92,56,.28);
+    }
+    #register:hover:not(:disabled) { background: #f4f2ee; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+      font-size: 12px;
+      color: #aba49c;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(78,68,60,.1);
+    }
     #status { margin-top: 14px; font-size: 13px; color: #3d5c38; min-height: 18px; text-align: center; }
     #status.err { color: #b6493d; }
   </style>
 </head>
 <body>
   <div class="panel">
-    <h1>Settings</h1>
+    <h1>🐘 Elephant</h1>
+    <div class="subtitle">Your vocabulary, everywhere.</div>
 
     <div class="field">
       <label>Server URL</label>
       <input id="serverUrl" type="text" placeholder="https://your-app.up.railway.app">
-      <div class="hint">Use your Railway HTTPS URL after deploying, or http://localhost:3001 while testing locally.</div>
     </div>
 
     <div class="field">
       <label>API Token</label>
-      <input id="apiToken" type="password" placeholder="Paste token from /mytoken">
-      <div class="hint">Run <strong>/mytoken</strong> in Discord once, then paste the token here.</div>
+      <input id="apiToken" type="password" placeholder="Your token">
+      <div class="hint" id="token-hint">
+        No Discord? Click <strong>Create account</strong> to get a token instantly.<br>
+        Have Discord? Run <strong>/mytoken</strong> in the server and paste it here.
+      </div>
     </div>
 
-    <button id="save">Save settings</button>
+    <div class="btn-row">
+      <button id="register">Create account</button>
+      <button id="save">Save</button>
+    </div>
     <div id="status"></div>
   </div>
 
