@@ -52,7 +52,7 @@
 
 	// ── Shadow hosts ──────────────────────────────────────────────────────────
 	let iconShadow = null, cardShadow = null;
-	let hideTimer = null, lastWord = '', lastRect = null;
+	let hideTimer = null, selectionTimer = null, lastWord = '', lastRect = null;
 	let lastAudio = '';
 	let cardPinned = false;
 	let reviewWords = [];
@@ -623,8 +623,15 @@
 	}
 
 	// ── Selection listener ────────────────────────────────────────────────────
-	document.addEventListener('mouseup', e => {
-		if (e.composedPath().some(n => n.id === '__ele-icon__' || n.id === '__ele-card__')) return;
+	function getSelectionRect(sel) {
+		if (!sel || sel.rangeCount === 0) return null;
+		const range = sel.getRangeAt(0);
+		const rect = range.getBoundingClientRect();
+		if (rect.width || rect.height) return rect;
+		return Array.from(range.getClientRects()).find(r => r.width || r.height) || null;
+	}
+
+	function maybeShowIcon() {
 		if (cardPinned) return;
 		clearTimeout(hideTimer);
 
@@ -642,8 +649,26 @@
 		}
 
 		lastWord = cleaned;
-		lastRect = sel.getRangeAt(0).getBoundingClientRect();
+		lastRect = getSelectionRect(sel);
+		if (!lastRect) {
+			hideTimer = setTimeout(hideIcon, 200);
+			return;
+		}
 		showIcon(lastRect);
+	}
+
+	document.addEventListener('mouseup', e => {
+		if (e.composedPath().some(n => n.id === '__ele-icon__' || n.id === '__ele-card__')) return;
+		maybeShowIcon();
+	});
+
+	document.addEventListener('selectionchange', () => {
+		clearTimeout(selectionTimer);
+		selectionTimer = setTimeout(maybeShowIcon, 80);
+	});
+
+	document.addEventListener('keyup', e => {
+		if (e.key === 'Shift' || e.key.startsWith('Arrow')) maybeShowIcon();
 	});
 
 	window.addEventListener('scroll', () => {
