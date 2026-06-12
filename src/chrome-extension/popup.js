@@ -2,6 +2,10 @@ document.getElementById('study-btn').addEventListener('click', () => {
 	chrome.tabs.create({ url: chrome.runtime.getURL('study.html') });
 });
 
+document.getElementById('wordlist-btn').addEventListener('click', () => {
+	chrome.tabs.create({ url: chrome.runtime.getURL('wordlist.html') });
+});
+
 const btn = document.getElementById('send');
 const wordsEl = document.getElementById('words');
 const statusEl = document.getElementById('status');
