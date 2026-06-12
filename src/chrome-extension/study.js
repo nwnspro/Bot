@@ -31,7 +31,7 @@ function speakZh(text) {
 function updateCount() {
 	const remaining = words.length - index;
 	document.getElementById('count-label').textContent =
-    remaining > 0 ? `${remaining} to review` : '';
+		remaining > 0 ? `${remaining} to review` : 'Review';
 }
 
 function renderWord(w) {
@@ -191,5 +191,9 @@ async function init() {
 		);
 	}
 }
+
+document.getElementById('wordlist-btn').addEventListener('click', () => {
+	chrome.tabs.create({ url: chrome.runtime.getURL('wordlist.html') });
+});
 
 init();

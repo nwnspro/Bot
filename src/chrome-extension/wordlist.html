@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Elephant — My Words</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #edeae5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 48px;
+    }
+
+    .page { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 14px; }
+
+    .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      color: #3d5c38;
+      padding: 4px 8px 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .back-btn:hover { opacity: .75; }
+/* ── Words panel ── */
+    .panel {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.06);
+      padding: 20px;
+    }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px 0;
+    }
+
+    .word-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 7px 8px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #2e4a28;
+      transition: background .1s;
+    }
+    .word-item:hover { background: #f4f2ee; }
+    .word-item span {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 18px;
+    }
+    .del-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(180,60,50,.12);
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: #b43c32;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .word-item:hover .del-btn { display: flex; }
+    .del-btn:hover { background: rgba(180,60,50,.22); }
+
+    /* ── States ── */
+    .state-card {
+      background: #fff; border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.06);
+      padding: 40px 24px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px; text-align: center; color: #6b7f68;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 28px; height: 28px; border: 3px solid #ddd;
+      border-top-color: #4a6741; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .state-title { font-size: 17px; font-weight: 600; color: #2e4a28; }
+    .state-sub { font-size: 14px; }
+    .err-text { font-size: 13px; color: #c0392b; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Back -->
+    <div><button class="back-btn" id="back-btn">&#8592; Back</button></div>
+
+    <!-- Dynamic content -->
+    <div id="content">
+      <div class="state-card">
+        <div class="spinner"></div>
+        <div class="state-sub">Loading your words…</div>
+      </div>
+    </div>
+
+  </div>
+  <script src="wordlist.js"></script>
+</body>
+</html>

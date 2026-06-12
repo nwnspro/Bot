@@ -37,6 +37,18 @@
     }
     .hdr-title { font-size: 16px; font-weight: 600; color: #2e4a28; }
     .hdr-count { font-size: 15px; font-weight: 700; color: #4a6741; }
+    .wordlist-btn {
+      padding: 7px 14px;
+      border-radius: 10px;
+      background: #f4f2ee;
+      border: 1.5px solid rgba(61,92,56,.18);
+      color: #3d5c38;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .wordlist-btn:hover { background: #e8e4dc; }
 
     /* ── Word card ── */
     .card {
@@ -144,9 +156,9 @@
     <div class="hdr">
       <div class="hdr-left">
         <span class="hdr-logo">🐘</span>
-        <span class="hdr-title">Review</span>
+        <span class="hdr-count" id="count-label"></span>
       </div>
-      <span class="hdr-count" id="count-label"></span>
+      <button class="wordlist-btn" id="wordlist-btn">All words</button>
     </div>
 
     <!-- Dynamic content -->

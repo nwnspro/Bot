@@ -1,6 +1,6 @@
 const http = require('http');
 const { EmbedBuilder } = require('discord.js');
-const { addWords, saveWordZh, setWordStatus, recordReview, findUserByToken, createGuestUser } = require('../storage');
+const { addWords, saveWordZh, setWordStatus, recordReview, findUserByToken, createGuestUser, deleteWord } = require('../storage');
 const { lookup, lookupMany } = require('../dictionary');
 
 const PORT = process.env.PORT || 3001;
@@ -144,6 +144,19 @@ const server = http.createServer(async (req, res) => {
 			if (!user) return respond(res, 401, { error: 'Invalid token. Run /mytoken in Discord.' });
 			await setWordStatus(user.userId, word, status);
 			await recordReview(user.userId, word, status === 'known');
+			return respond(res, 200, { ok: true });
+		}
+
+		// ── POST /api/delete-word { token, word } ───────────────────────────────
+		if (req.method === 'POST' && url.pathname === '/api/delete-word') {
+			let parsed;
+			try { parsed = await parseBody(req); }
+			catch { return respond(res, 400, { error: 'Invalid JSON' }); }
+			const { token, word } = parsed;
+			if (!token || !word) return respond(res, 400, { error: 'token and word required' });
+			const user = await findUserByToken(token);
+			if (!user) return respond(res, 401, { error: 'Invalid token. Run /mytoken in Discord.' });
+			await deleteWord(user.userId, word);
 			return respond(res, 200, { ok: true });
 		}
 

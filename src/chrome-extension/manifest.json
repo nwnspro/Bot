@@ -31,6 +31,6 @@
   },
   "options_page": "options.html",
   "web_accessible_resources": [
-    { "resources": ["study.html"], "matches": ["<all_urls>"] }
+    { "resources": ["study.html", "wordlist.html"], "matches": ["<all_urls>"] }
   ]
 }
