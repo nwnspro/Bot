@@ -54,3 +54,62 @@ btn.addEventListener('click', async () => {
 
 	btn.disabled = false;
 });
+
+// ── Dictionary lookup ──────────────────────────────────────────────────────
+
+const dictInput = document.getElementById('dict-input');
+const dictResult = document.getElementById('dict-result');
+let lookupTimer = null;
+
+function esc(s) {
+	return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showResult(html) {
+	dictResult.style.display = 'block';
+	dictResult.innerHTML = html;
+}
+
+dictInput.addEventListener('input', () => {
+	clearTimeout(lookupTimer);
+	const word = dictInput.value.trim();
+	if (!word) {
+		dictResult.style.display = 'none';
+		return;
+	}
+	lookupTimer = setTimeout(() => doLookup(word), 500);
+});
+
+async function doLookup(word) {
+	const { serverUrl, apiToken } = await chrome.storage.sync.get(['serverUrl', 'apiToken']);
+	if (!serverUrl || !apiToken) {
+		showResult('<div class="result-err">Set up server URL and token in options first.</div>');
+		return;
+	}
+
+	showResult('<div class="result-loading">Looking up…</div>');
+
+	try {
+		const res = await fetch(
+			`${serverUrl}/api/enrich?token=${encodeURIComponent(apiToken)}&word=${encodeURIComponent(word)}`,
+		);
+		const data = await res.json();
+		if (!data.ok) throw new Error(data.error || 'Lookup failed');
+
+		const zhPart = data.zh ? `<span class="zh">${esc(data.zh)}</span> – ` : '';
+		const defPart = esc(data.definition || 'No definition found.');
+		const exPart = data.example
+			? `<div class="result-ex-label">Example</div><div class="result-ex">${esc(data.example)}</div>`
+			: '';
+
+		showResult(`
+      <div class="result-card">
+        <div class="result-word">📖 ${esc(data.word || word)}</div>
+        <div class="result-def">${zhPart}${defPart}</div>
+        ${exPart}
+      </div>`);
+	}
+	catch (err) {
+		showResult(`<div class="result-err">${esc(err.message || 'Could not reach server.')}</div>`);
+	}
+}

@@ -18,89 +18,193 @@
       padding: 16px;
       box-shadow: 0 14px 30px rgba(67,53,38,.10);
     }
-    label {
+    .section-label {
       font-size: 12px;
       color: #6f8b61;
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 800;
       letter-spacing: .05em;
       text-transform: uppercase;
     }
     textarea {
       width: 100%;
-      height: 86px;
-      padding: 12px;
+      height: 72px;
+      padding: 11px 12px;
       border: 1.5px solid rgba(111,139,97,.22);
       border-radius: 14px;
       background: #f7f5f1;
       color: #263422;
-      font-size: 15px;
+      font-size: 14px;
       resize: none;
       outline: none;
     }
     textarea:focus { border-color: #6f8b61; background: #fff; }
     textarea::placeholder { color: #9b968f; }
-    button {
-      width: 100%;
-      padding: 12px;
+
+    /* ── Action row ── */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-row button {
+      flex: 1;
+      padding: 11px 10px;
       border-radius: 14px;
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
       font-weight: 800;
       transition: background .12s, transform .08s;
     }
-    button:active { transform: scale(.98); }
-    button:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-row button:active { transform: scale(.98); }
+    .btn-row button:disabled { opacity: .55; cursor: not-allowed; }
     #study-btn {
-      margin-top: 12px;
+      background: #fff;
+      color: #3d5c38;
+      border: 1.5px solid rgba(61,92,56,.22);
+    }
+    #study-btn:hover { background: #f4f2ee; }
+    #send {
       background: #3d5c38;
       color: #fff;
       border: 1px solid #3d5c38;
-      box-shadow: 0 8px 18px rgba(61,92,56,.22);
+      box-shadow: 0 6px 14px rgba(61,92,56,.22);
     }
-    #study-btn:hover { background: #344f30; }
-    #send {
-      margin-top: 10px;
-      background: #fff;
-      color: #3d5c38;
-      border: 1.5px solid rgba(61,92,56,.22);
-    }
-    #send:hover { background: #f4f2ee; }
-    #wordlist-btn {
-      margin-top: 10px;
-      background: #fff;
-      color: #3d5c38;
-      border: 1.5px solid rgba(61,92,56,.22);
-    }
-    #wordlist-btn:hover { background: #f4f2ee; }
+    #send:hover { background: #344f30; }
+
     #status {
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 12px;
       text-align: center;
-      min-height: 16px;
+      min-height: 15px;
       color: #7b8278;
     }
     #status.ok { color: #3d5c38; }
     #status.err { color: #b6493d; }
-    .hint {
-      margin-top: 12px;
+
+    /* ── Divider ── */
+    .divider { margin: 14px 0; border: none; border-top: 1px solid rgba(78,68,60,.1); }
+
+    /* ── Dictionary search ── */
+    .search-wrap {
+      position: relative;
+      margin-top: 8px;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    #dict-input {
+      width: 100%;
+      padding: 11px 12px 11px 36px;
+      border: 1.5px solid rgba(111,139,97,.22);
+      border-radius: 14px;
+      background: #f7f5f1;
+      color: #263422;
+      font-size: 14px;
+      outline: none;
+    }
+    #dict-input:focus { border-color: #6f8b61; background: #fff; }
+    #dict-input::placeholder { color: #9b968f; }
+
+    /* ── Result card ── */
+    #dict-result {
+      margin-top: 10px;
+      display: none;
+    }
+    .result-card {
+      background: #f4f2ee;
+      border-radius: 14px;
+      border-left: 4px solid #4a6741;
+      padding: 13px 14px;
+    }
+    .result-word {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e2d1b;
+      margin-bottom: 7px;
+    }
+    .result-def {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #3a4e37;
+      margin-bottom: 9px;
+    }
+    .result-def .zh {
+      font-weight: 700;
+      color: #1e2d1b;
+      font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    }
+    .result-ex-label {
       font-size: 11px;
-      line-height: 1.35;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #4a6741;
+      margin-bottom: 4px;
+    }
+    .result-ex {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #5a7057;
+    }
+    .result-loading {
+      font-size: 13px;
       color: #89837b;
       text-align: center;
+      padding: 10px 0;
     }
+    .result-err {
+      font-size: 13px;
+      color: #b6493d;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    /* ── My words link ── */
+    .wordlist-link {
+      display: block;
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #4a6741;
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+    }
+    .wordlist-link:hover { color: #3d5c38; }
   </style>
 </head>
 <body>
   <div class="panel">
-    <label>Words to add</label>
+    <span class="section-label">Words to add</span>
     <textarea id="words" placeholder="eloquent verbose laconic"></textarea>
-    <button id="send">Add words</button>
-    <button id="wordlist-btn">My words</button>
-    <button id="study-btn">Review mode</button>
+    <div class="btn-row">
+      <button id="study-btn">Review mode</button>
+      <button id="send">Add words</button>
+    </div>
     <div id="status"></div>
-    <div class="hint">Right-click selected text on any page to add words faster.</div>
+
+    <hr class="divider">
+
+    <span class="section-label">Look up a meaning</span>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="#6f8b61" stroke-width="1.5"/>
+        <path d="M10 10l3 3" stroke="#6f8b61" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input id="dict-input" type="text" placeholder="Type a word…" autocomplete="off">
+    </div>
+    <div id="dict-result"></div>
+
+    <button class="wordlist-link" id="wordlist-btn">My words</button>
   </div>
   <script src="popup.js"></script>
 </body>
