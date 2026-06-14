@@ -59,7 +59,6 @@ btn.addEventListener('click', async () => {
 
 const dictInput = document.getElementById('dict-input');
 const dictResult = document.getElementById('dict-result');
-let lookupTimer = null;
 
 function esc(s) {
 	return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -70,14 +69,15 @@ function showResult(html) {
 	dictResult.innerHTML = html;
 }
 
-dictInput.addEventListener('input', () => {
-	clearTimeout(lookupTimer);
-	const word = dictInput.value.trim();
-	if (!word) {
-		dictResult.style.display = 'none';
-		return;
+dictInput.addEventListener('keydown', (e) => {
+	if (e.key === 'Enter') {
+		const word = dictInput.value.trim();
+		if (word) doLookup(word);
 	}
-	lookupTimer = setTimeout(() => doLookup(word), 500);
+});
+
+dictInput.addEventListener('input', () => {
+	if (!dictInput.value.trim()) dictResult.style.display = 'none';
 });
 
 async function doLookup(word) {
