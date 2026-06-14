@@ -61,7 +61,7 @@ async function init() {
 	}
 
 	try {
-		const res = await fetch(`${serverUrl}/api/words?token=${encodeURIComponent(apiToken)}`);
+		const res = await fetch(`${serverUrl}/api/words/list?token=${encodeURIComponent(apiToken)}`);
 		const data = await res.json();
 		if (!data.ok) throw new Error(data.error || 'Failed to load words');
 		words = (data.words || []).sort((a, b) => a.word.localeCompare(b.word));

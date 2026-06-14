@@ -116,6 +116,19 @@ const server = http.createServer(async (req, res) => {
 			});
 		}
 
+		// ── GET /api/words/list?token= ──────────────────────────────────────────
+		// Lightweight endpoint — returns word names + statuses only, no dictionary lookups.
+		if (req.method === 'GET' && url.pathname === '/api/words/list') {
+			const token = url.searchParams.get('token');
+			if (!token) return respond(res, 400, { error: 'token required' });
+			const user = await findUserByToken(token);
+			if (!user) return respond(res, 401, { error: 'Invalid token. Run /mytoken in Discord.' });
+			const words = user.data.words
+				.filter(w => w.status !== 'known')
+				.map(w => ({ word: w.word, status: w.status }));
+			return respond(res, 200, { ok: true, words });
+		}
+
 		// ── GET /api/words?token= ────────────────────────────────────────────────
 		if (req.method === 'GET' && url.pathname === '/api/words') {
 			const token = url.searchParams.get('token');
