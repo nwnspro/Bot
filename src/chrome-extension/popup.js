@@ -104,7 +104,7 @@ async function doLookup(word) {
 
 		showResult(`
       <div class="result-card">
-        <div class="result-word">📖 ${esc(data.word || word)}</div>
+        <div class="result-word">${esc(data.word || word)}</div>
         <div class="result-def">${zhPart}${defPart}</div>
         ${exPart}
       </div>`);
