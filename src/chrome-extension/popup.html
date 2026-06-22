@@ -122,12 +122,24 @@
 
       padding: 13px 14px;
     }
+    .result-word-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
     .result-word {
       font-size: 20px;
       font-weight: 700;
       color: #1e2d1b;
-      margin-bottom: 7px;
     }
+    .result-speak {
+      width: 28px; height: 28px; border-radius: 50%; border: none;
+      background: #4a6741; cursor: pointer; flex-shrink: 0;
+      display: grid; place-items: center;
+      box-shadow: 0 2px 6px rgba(74,103,65,.35);
+    }
+    .result-speak:hover { background: #3a5632; }
     .result-def {
       font-size: 13px;
       line-height: 1.5;

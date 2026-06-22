@@ -104,10 +104,28 @@ async function doLookup(word) {
 
 		showResult(`
       <div class="result-card">
-        <div class="result-word">${esc(data.word || word)}</div>
+        <div class="result-word-row">
+          <span class="result-word">${esc(data.word || word)}</span>
+          <button class="result-speak" title="Hear pronunciation">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M4 9.5v5h3.2L12 18.5V5.5L7.2 9.5H4Z" fill="#fff"/>
+              <path d="M15.2 9.2c.9.8 1.4 1.8 1.4 2.8s-.5 2-1.4 2.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
         <div class="result-def">${zhPart}${defPart}</div>
         ${exPart}
       </div>`);
+
+		const audioUrl = data.audio || '';
+		const speakWord = data.word || word;
+		dictResult.querySelector('.result-speak').addEventListener('click', () => {
+			if (audioUrl) { new Audio(audioUrl).play().catch(() => {}); return; }
+			speechSynthesis.cancel();
+			const u = new SpeechSynthesisUtterance(speakWord);
+			u.lang = 'en-US'; u.rate = 0.9;
+			speechSynthesis.speak(u);
+		});
 	}
 	catch (err) {
 		showResult(`<div class="result-err">${esc(err.message || 'Could not reach server.')}</div>`);
