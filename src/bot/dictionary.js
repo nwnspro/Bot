@@ -253,17 +253,16 @@ async function lookup(word) {
 	}
 
 	try {
-		// 3. Fire dictionary, thesaurus, and translation all at once
-		const [learners, thesaurus, zh] = await Promise.all([
+		// 3. Fire all sources in parallel
+		const [learners, freeDic, datamuse, thesaurus, zh] = await Promise.all([
 			lookupLearnersDictionary(cleanWord),
+			lookupFreeDictionary(cleanWord),
+			lookupDatamuse(cleanWord),
 			lookupMerriamThesaurus(cleanWord),
 			translateToZh(cleanWord),
 		]);
 
-		let result = learners
-			|| await lookupFreeDictionary(cleanWord)
-			|| await lookupDatamuse(cleanWord);
-
+		const result = learners || freeDic || datamuse;
 		if (!result) return null;
 
 		result.zh = zh || '';
